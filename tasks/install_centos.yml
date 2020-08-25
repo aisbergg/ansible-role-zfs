@@ -1,0 +1,30 @@
+---
+- name: Add ZFS repository
+  template:
+    src: etc/yum.repos.d/zfs.repo.j2
+    dest: /etc/yum.repos.d/zfs.repo
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy ZFS repo GPG key
+  copy:
+    src: centos/RPM-GPG-KEY-zfsonlinux
+    dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-zfsonlinux
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install ZFS on CentOS
+  dnf:
+    name: >-
+      {% if 'kmod' not in zfs_centos_repo -%}
+        ['kernel-devel-{{ ansible_kernel }}', 'zfs']
+      {% else -%}
+        zfs
+      {% endif %}
+    state: present
+
+- name: Ensure ZFS module is loaded
+  modprobe:
+    name: zfs

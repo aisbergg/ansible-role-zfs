@@ -1,0 +1,28 @@
+---
+- name: Update APT cache
+  apt:
+    update_cache: true
+
+- name: Gather package facts
+  package_facts:
+
+- name: Install Linux kernel headers
+  apt:
+    name: "{{ ansible_facts.packages.keys() | select('match', '^linux-image-.+') | map('replace', 'image', 'headers') | list }}"
+    state: present
+
+- name: Install ZFS on Debian
+  apt:
+    name: "{{ item }}"
+    state: present
+    default_release: "{{ zfs_debian_repo if zfs_debian_repo | length > 0 else omit }}"
+  # install the packages one after another
+  loop:
+    - zfs-dkms
+    - zfsutils-linux
+    - zfs-zed
+    - zfs-initramfs
+
+- name: Ensure ZFS module is loaded
+  modprobe:
+    name: zfs

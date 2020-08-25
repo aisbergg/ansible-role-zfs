@@ -1,0 +1,20 @@
+---
+- name: Get list of available zpools
+  shell: "zpool list | awk 'FNR >1' | awk '{print $1}'"
+  register: available_zpools
+  changed_when: false
+  check_mode: false
+
+- name: Get list of importable zpools
+  shell: "zpool import | sed -nr 's/^\\s*pool: (.*)/\\1/p'"
+  register: importable_zpools
+  changed_when: false
+  check_mode: false
+
+- include_tasks: manage_pool.yml
+  vars:
+    zfs_pool: "{{ zfs_pools_defaults | combine(_zfs_pool) }}"
+    zfs_dataset_properties: "{{ zfs_filesystems_properties_defaults | combine(zfs_pool.filesystem_properties | default({})) }}"
+  loop: "{{ zfs_pools }}"
+  loop_control:
+    loop_var: _zfs_pool

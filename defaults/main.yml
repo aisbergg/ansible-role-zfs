@@ -1,0 +1,63 @@
+---
+# install
+zfs_centos_repo: zfs-kmod
+zfs_debian_repo: "{{ ansible_distribution_release }}-backports"
+
+# services
+zfs_services_enabled: {}
+
+zfs_use_zfs_mount_generator: false
+
+# configuration
+# https://zfsonlinux.org/manpages/0.8.4/man5/zfs-module-parameters.5.html
+zfs_kernel_module_parameters: {}
+
+# zpools and datasets
+zfs_scrub_schedule: monthly
+
+zfs_pools: []
+zfs_pools_defaults: {}
+#   - name:
+#     vdev: >-
+#       mirror
+#         dev1
+#         dev1
+#       mirror
+#         dev1
+#         dev2
+#       log dd
+#     scrub: true
+#     dont_enable_features: false
+#     properties:
+#       ashift: 9
+#     filesystem_properties:
+#     extra_import_options: ""
+#     extra_create_options: ""
+
+zfs_volumes: []
+# https://zfsonlinux.org/manpages/0.8.4/man8/zfs.8.html
+zfs_volumes_properties_defaults:
+  volblocksize: 8K
+  volsize: 1G
+  compression: lz4
+  dedup: false
+  sync: standard
+
+zfs_filesystems: []
+# https://zfsonlinux.org/manpages/0.8.4/man8/zfs.8.html
+zfs_filesystems_properties_defaults:
+  acltype: posixacl
+  atime: false
+  canmount: true
+  casesensitivity: sensitive
+  compression: lz4
+  dedup: false
+  normalization: formD
+  setuid: true
+  snapdir: hidden
+  sync: standard
+  utf8only: on
+  xattr: sa
+
+zfs_storage_defaults: {}
+zfs_storage_drive_wwids: []

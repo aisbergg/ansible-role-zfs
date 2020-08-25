@@ -1,0 +1,196 @@
+---
+- set_fact:
+    __zfs_services_enabled:
+      "zfs-import-cache": "{{ zfs_services_enabled['zfs-import-cache'] | default(true) }}"
+      "zfs-import-scan": "{{ zfs_services_enabled['zfs-import-scan'] | default(false) }}"
+      "zfs-mount": "{{ zfs_services_enabled['zfs-mount'] | default(zfs_use_zfs_mount_generator | bool | ternary(false, true)) }}"
+      "zfs-share": "{{ zfs_services_enabled['zfs-share'] | default(false) }}"
+      "zfs-volume-wait": "{{ zfs_services_enabled['zfs-volume-wait'] | default(true) }}"
+      "zfs-zed": "{{ zfs_services_enabled['zfs-zed'] | default(true) }}"
+
+- name: Manage ZFS services
+  systemd:
+    name: "{{ item.name }}"
+    enabled: "{{ item.enabled }}"
+    state: "{{ item.enabled | ternary('started', 'stopped') }}"
+  loop:
+    - name: zfs.target
+      enabled: true
+    - name: zfs-import.target
+      enabled: true
+    - name: zfs-import-cache
+      enabled: "{{ __zfs_services_enabled['zfs-import-cache'] }}"
+    - name: zfs-import-scan
+      enabled: "{{ __zfs_services_enabled['zfs-import-scan'] }}"
+    - name: zfs-mount
+      enabled: "{{ __zfs_services_enabled['zfs-mount'] }}"
+    - name: zfs-share
+      enabled: "{{ __zfs_services_enabled['zfs-share'] }}"
+    - name: zfs-volume-wait
+      enabled: "{{ __zfs_services_enabled['zfs-volume-wait'] }}"
+    - name: zfs-zed
+      enabled: "{{ __zfs_services_enabled['zfs-zed'] }}"
+
+
+
+# zfs mount generator
+- when: zfs_use_zfs_mount_generator
+  block:
+    - name: Enable the ZED script
+      file:
+        src: "{{ __zfs_zedletdir }}/history_event-zfs-list-cacher.sh"
+        dest: /etc/zfs/zed.d/history_event-zfs-list-cacher.sh
+        state: link
+      register: history_event_zedlet
+
+    - name: Inform ZED about script change
+      systemd:
+        name: zfs-zed
+        state: restarted
+      when: history_event_zedlet.changed
+
+    - name: Ensure mount generator cache directory exists
+      file:
+        path: /etc/zfs/zfs-list.cache
+        state: directory
+
+    - name: Create generator cache content
+      shell: |
+        # see history_event-zfs-list-cacher.sh
+        PROPS="name,mountpoint,canmount,atime,relatime,devices,exec\
+        ,readonly,setuid,nbmand,encroot,keylocation\
+        ,org.openzfs.systemd:requires,org.openzfs.systemd:requires-mounts-for\
+        ,org.openzfs.systemd:before,org.openzfs.systemd:after\
+        ,org.openzfs.systemd:wanted-by,org.openzfs.systemd:required-by\
+        ,org.openzfs.systemd:nofail,org.openzfs.systemd:ignore"
+
+        # include only datasets, that do not use legacy mounts
+        zfs list -H -t filesystem -o $PROPS -r -s name {{ zfs_pool.name | quote }} | awk '{ if ($2 != "legacy") { print } }'
+      register: zfs_list_cache
+      changed_when: false
+      check_mode: false
+      loop: "{{ zfs_pools }}"
+      loop_control:
+        loop_var: zfs_pool
+        label: "{{ zfs_pool.name }}"
+
+    - name: Create generator cache files
+      copy:
+        content: "{{ cache_entry.stdout }}"
+        dest: "/etc/zfs/zfs-list.cache/{{ cache_entry.zfs_pool.name }}"
+        owner: root
+        group: root
+        mode: 0644
+      loop: "{{ zfs_list_cache.results }}"
+      loop_control:
+        loop_var: cache_entry
+        label: "{{ cache_entry.zfs_pool.name }}"
+
+    # - name: Create generator cache files
+    #   file:
+    #     path: "/etc/zfs/zfs-list.cache/{{ zfs_pool.name }}"
+    #     state: touch
+    #   loop: "{{ zfs_pools }}"
+    #   loop_control:
+    #     loop_var: zfs_pool
+    #     label: "{{ zfs_pool.name }}"
+
+    # - name: Trigger ZED to update generator cache files
+    #   command: "zfs set canmount={{ __canmount }} {{ zfs_pool.name }}"
+    #   vars:
+    #     __canmount: "
+    #       {%- if __zfs_dataset_properties.canmount is boolean -%}
+    #       {{ __zfs_dataset_properties.canmount | ternary('on', 'off') }}
+    #       {%- else -%}
+    #       {{ __zfs_dataset_properties.canmount }}
+    #       {%- endif %}"
+    #     __zfs_dataset_properties: "{{ zfs_filesystems_properties_defaults | combine(zfs_pool.filesystem_properties | default({})) }}"
+    #   loop: "{{ zfs_pools }}"
+    #   loop_control:
+    #     loop_var: zfs_pool
+    #     label: "{{ zfs_pool.name }}"
+
+
+
+# fix for journald when using zfs-mount.service
+- when: __zfs_services_enabled['zfs-mount']
+  block:
+    - name: Ensure '/etc/systemd/system/systemd-journald.service.d' directory exists
+      file:
+        path: /etc/systemd/system/systemd-journald.service.d/
+        state: directory
+
+    - name: Create dependency for journald
+      template:
+        src: etc/systemd/system/systemd-journald.service.d/after-zfs-mount.service.j2
+        dest: /etc/systemd/system/systemd-journald.service.d/after-zfs-mount.service
+        owner: root
+        group: root
+        mode: 0644
+      register: journald_service
+
+
+
+# enable scrub service
+- block:
+    - name: Remove scrub cron job
+      file:
+        path: /etc/cron.d/zfsutils-linux
+        state: absent
+
+    - name: Create scrub service
+      template:
+        src: etc/systemd/system/zpool-scrub@.service.j2
+        dest: /etc/systemd/system/zpool-scrub@.service
+        owner: root
+        group: root
+        mode: 0644
+      register: scrub_service
+
+    - name: Create scrub timer
+      template:
+        src: etc/systemd/system/zpool-scrub@.timer.j2
+        dest: /etc/systemd/system/zpool-scrub@.timer
+        owner: root
+        group: root
+        mode: 0644
+      register: scrub_timer
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+      when: scrub_service.changed or scrub_timer.changed or journald_service.changed
+
+    - name: Enable scrub timer
+      systemd:
+        name: "zpool-scrub@{{ item.name }}.timer"
+        enabled: true
+        state: started
+      when: item.scrub | default(true)
+      loop: "{{ zfs_pools }}"
+      loop_control:
+        label: item.name
+
+    - name: Gather service facts
+      service_facts:
+
+    - debug:
+        msg: "{{
+            ansible_facts.services.keys() |
+            select('match', 'zpool-scrub@.+\\.service') |
+            map('regex_replace', 'zpool-scrub@(.+)\\.service', '\\1') |
+            list | difference(zfs_pools | selectattr2('scrub', '==', true, default=true) | map(attribute='name') | list)
+          }}"
+
+    - name: Disable undefined scrub timer
+      systemd:
+        name: "zpool-scrub@{{ item }}.timer"
+        enabled: false
+        state: stopped
+      loop: "{{
+              ansible_facts.services.keys() |
+              select('match', 'zpool-scrub@.+\\.service') |
+              map('regex_replace', 'zpool-scrub@(.+)\\.service', '\\1') |
+              list | difference(zfs_pools | selectattr2('scrub', '==', true, default=true) | map(attribute='name') | list)
+            }}"
+

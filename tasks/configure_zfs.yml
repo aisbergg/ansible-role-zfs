@@ -1,0 +1,25 @@
+---
+- name: Configure ZFS kernel parameters
+  template:
+    src: etc/modprobe.d/zfs.conf.j2
+    dest: /etc/modprobe.d/zfs.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - update initramfs (Debian)
+    - mkinitcpio (Arch Linux)
+
+- name: Configure ZFS
+  template:
+    src: etc/default/zfs.j2
+    dest: /etc/default/zfs
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Write udev rule to set noop scheduler
+  template:
+    src: etc/udev/rules.d/60-zfs-hdd-noop-io-scheduler.rules.j2
+    dest: /etc/udev/rules.d/60-zfs-hdd-noop-io-scheduler.rules
+  notify: reload udev rules

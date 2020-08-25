@@ -1,0 +1,20 @@
+---
+- name: Gather properties of '{{ zfs_volume.name | mandatory }}'
+  zfs_facts:
+    name: "{{ zfs_volume.name }}"
+  failed_when: false
+  changed_when: false
+  register: zfs_volume_facts
+
+- name: Prepare volume properties
+  prepare_zfs_properties:
+    new_properties: "{{ zfs_volume_properties }}"
+    current_properties: "{{ ansible_zfs_datasets[0] | default({}) }}"
+    type: volume
+  register: prepared_volume_properties
+
+- name: Manage volume '{{ zfs_volume.name }}'
+  zfs:
+    name: "{{ zfs_volume.name }}"
+    state: "{{ zfs_volume.state | default('present') }}"
+    extra_zfs_properties: "{{ prepared_volume_properties.properties }}"

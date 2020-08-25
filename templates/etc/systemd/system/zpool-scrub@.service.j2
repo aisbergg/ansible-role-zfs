@@ -1,0 +1,13 @@
+{{ ansible_managed | comment }}
+
+[Unit]
+Description=Scrub ZFS Pool %i
+Requires=zfs.target
+After=zfs.target
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/zpool scrub %i
+Nice=19
+IOSchedulingClass=idle
+KillSignal=SIGINT

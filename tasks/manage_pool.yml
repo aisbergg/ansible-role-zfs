@@ -1,0 +1,126 @@
+---
+# import a zpool
+- when:
+    - zfs_pool.name not in available_zpools.stdout_lines
+    - zfs_pool.name in importable_zpools.stdout_lines
+  block:
+    - name: Prepare zpool properties
+      prepare_zfs_properties:
+        new_properties: "{{ zfs_pool.properties | default({}) }}"
+        type: zpool
+      register: prepared_zpool_properties
+
+    - set_fact:
+        zpool_import_command: >-
+          zpool import
+          {% for property, value in (prepared_zpool_properties.properties | dictsort) %}
+          -o {{ (property ~ '=' ~ value) | quote }}
+          {% endfor %}
+          {{ zfs_pool.extra_import_options | default('') }}
+          {{ zfs_pool.name }}
+
+    - name: Print ZPool import command
+      debug:
+        msg: "{{ zpool_import_command }}"
+        verbosity: 1
+
+    - name: Import ZPool '{{ zfs_pool.name }}'
+      command: "{{ zpool_import_command }}"
+      register: zpool_import_result
+      changed_when: true
+      failed_when: (zpool_import_result.rc != 0) or (zpool_import_result.stderr | length > 0)
+
+
+
+# create a new zpool
+- when:
+    - zfs_pool.name not in available_zpools.stdout_lines
+    - zfs_pool.name not in importable_zpools.stdout_lines
+  block:
+    - name: Prepare zpool properties
+      prepare_zfs_properties:
+        new_properties: "{{ zfs_pool.properties | default({}) }}"
+        type: zpool
+      register: prepared_zpool_properties
+
+    - name: Prepare dataset properties
+      prepare_zfs_properties:
+        new_properties: "{{ zfs_dataset_properties }}"
+        type: filesystem
+      register: prepared_dataset_properties
+
+    - set_fact:
+        zpool_create_command: >-
+          zpool create
+          {{ '-d ' if zfs_pool.dont_enable_features | default(false) else '' }}
+          {% for property, value in (prepared_zpool_properties.properties | dictsort) %}
+          -o {{ (property ~ '=' ~ value) | quote }}
+          {% endfor %}
+          {% for property, value in (prepared_dataset_properties.properties | dictsort) %}
+          -O {{ (property ~ '=' ~ value) | quote }}
+          {% endfor %}
+          {{ zfs_pool.name }}
+          {{ zfs_pool.extra_create_options | default('') }}
+          {{ zfs_pool.vdev | regex_replace('\n\s*', ' ') }}
+
+    - name: Print ZPool creation command
+      debug:
+        msg: "{{ zpool_create_command }}"
+        verbosity: 1
+
+    - name: Create ZPool '{{ zfs_pool.name }}'
+      command: "{{ zpool_create_command }}"
+      changed_when: true
+
+
+
+# set zpool properties on an existing pool
+- when: zfs_pool.name in available_zpools.stdout_lines
+  block:
+    - name: Gather properties of '{{ zfs_pool.name }}'
+      zpool_facts:
+        name: "{{ zfs_pool.name }}"
+        parsable: true
+      failed_when: false
+      changed_when: false
+      register: zfs_zpool_facts
+
+    - name: Prepare zpool properties
+      prepare_zfs_properties:
+        new_properties: "{{ zfs_pool.properties | default({}) }}"
+        current_properties: "{{ ansible_zfs_pools.0 | default({}) }}"
+        type: zpool
+      register: prepared_zpool_properties
+
+    - name: Manage zpool properties of '{{ zfs_pool.name }}'
+      command: "zpool set {{ (item.0 ~ '=' ~ item.1) | quote }} {{ zfs_pool.name }}"
+      changed_when: true
+      loop_control:
+        label:  "{{ item.0 }}={{ item.1 }}"
+      loop: "{{ prepared_zpool_properties.properties | default({}) | dict2items }}"
+
+
+
+# set dataset properties on an existing pool
+- when: (zfs_pool.name in available_zpools.stdout_lines)
+        or (zfs_pool.name in importable_zpools.stdout_lines)
+  block:
+    - name: Gather dataset properties of '{{ zfs_pool.name }}'
+      zfs_facts:
+        name: "{{ zfs_pool.name }}"
+      failed_when: false
+      changed_when: false
+
+    - name: Prepare dataset properties
+      prepare_zfs_properties:
+        new_properties: "{{ zfs_dataset_properties }}"
+        current_properties: "{{ ansible_zfs_datasets[0] | default({}) }}"
+        type: filesystem
+      register: prepared_dataset_properties
+
+    - name: Manage dataset properties of '{{ zfs_pool.name }}'
+      zfs:
+        name: "{{ zfs_pool.name }}"
+        state: present
+        extra_zfs_properties: "{{ prepared_dataset_properties.properties }}"
+      when: "prepared_dataset_properties.properties | length > 0"
