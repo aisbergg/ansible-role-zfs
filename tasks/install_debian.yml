@@ -1,18 +1,27 @@
 ---
-- name: Update APT cache
-  apt:
+# ------------------------------------------------------------------------------
+# ZFS Installation
+# ------------------------------------------------------------------------------
+
+- name: update APT cache (Debian)
+  ansible.builtin.apt:
     update_cache: true
 
-- name: Gather package facts
-  package_facts:
+- name: gather package facts (Debian)
+  ansible.builtin.package_facts:
 
-- name: Install Linux kernel headers
-  apt:
-    name: "{{ ansible_facts.packages.keys() | select('match', '^linux-image-.+') | map('replace', 'image', 'headers') | list }}"
+- name: install Linux kernel headers (Debian)
+  ansible.builtin.apt:
+    name: "{{
+        ansible_facts.packages.keys() |
+        select('match', '^linux-image-.+') |
+        map('replace', 'image', 'headers') |
+        list
+      }}"
     state: present
 
-- name: Install ZFS on Debian
-  apt:
+- name: install ZFS (Debian)
+  ansible.builtin.apt:
     name: "{{ item }}"
     state: present
     default_release: "{{ zfs_debian_repo if zfs_debian_repo | length > 0 else omit }}"
@@ -23,6 +32,34 @@
     - zfs-zed
     - zfs-initramfs
 
-- name: Ensure ZFS module is loaded
+- name: ensure ZFS kernel module is loaded (Debian)
   modprobe:
     name: zfs
+
+
+
+# ------------------------------------------------------------------------------
+# Zrepl Installation
+# ------------------------------------------------------------------------------
+
+- when: zfs_zrepl_enabled
+  block:
+    - name: import zrepl repo GPG key (Debian)
+      ansible.builtin.apt_key:
+        data: "{{ lookup('file', 'debian/zrepl-apt-key.asc') }}"
+        id: E101418FD3D6FBCB9D65A62D708699FC5F2EBF16
+        state: present
+
+    - name: add zrepl repository (Debian)
+      ansible.builtin.apt_repository:
+        filename: zrepl
+        repo: >-
+          deb [arch=amd64] {{ zfs_zrepl_debian_repo_url }}/{{ ansible_distribution | lower }}
+          {{ ansible_distribution_release | lower }}
+          main
+        state: present
+
+    - name: install zrepl (Debian)
+      ansible.builtin.apt:
+        name: zrepl
+        state: present

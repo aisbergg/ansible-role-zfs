@@ -1,0 +1,4 @@
+#jinja2: trim_blocks: "true", lstrip_blocks: "true"
+{{ ansible_managed | comment }}
+
+{{ cfg | to_nice_yaml(indent=2) }}

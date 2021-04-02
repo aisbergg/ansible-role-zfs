@@ -1,5 +1,7 @@
 # Ansible
 *.retry
+.cache
+.molecule
 
 # Python: Byte-compiled / optimized / DLL files
 __pycache__/
@@ -8,5 +10,6 @@ __pycache__/
 .eggs/
 
 # Testing
+.tox/
 .vagrant/
 pytestdebug.log

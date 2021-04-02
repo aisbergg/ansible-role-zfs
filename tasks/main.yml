@@ -1,28 +1,34 @@
 ---
-- name: Include OS-specific variables
-  tags: [zfs]
-  include_vars: "{{ item }}"
+- name: include OS-specific variables
+  tags: [zfs, always]
+  ansible.builtin.include_vars: "{{ item }}"
   with_first_found:
-    - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}.yml"
+    - "{{ ansible_distribution | lower }}_{{ ansible_distribution_major_version }}.yml"
     - "{{ ansible_distribution | lower }}.yml"
-    - "{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version }}.yml"
+    - "{{ ansible_os_family | lower }}_{{ ansible_distribution_major_version }}.yml"
     - "{{ ansible_os_family | lower }}.yml"
 
-- include_tasks: "{{ task_file }}"
+- name: include installation tasks
+  ansible.builtin.include_tasks: "{{ task_file }}"
   tags: [zfs, zfs_install, install]
   loop_control:
     loop_var: task_file
   with_first_found:
+    - "install_{{ ansible_distribution | lower }}_{{ ansible_distribution_major_version }}.yml"
     - "install_{{ ansible_distribution | lower }}.yml"
+    - "install_{{ ansible_os_family | lower }}_{{ ansible_distribution_major_version }}.yml"
     - "install_{{ ansible_os_family | lower }}.yml"
 
-- import_tasks: configure_zfs.yml
+- name: include configuration tasks
+  ansible.builtin.import_tasks: configure_zfs.yml
   tags: [zfs, zfs_config, config]
 
-- include_tasks: manage_pools.yml
-  tags: [zfs, zfs_pool,]
+- name: include pool management tasks
+  ansible.builtin.include_tasks: manage_pools.yml
+  tags: [zfs, zfs_pool]
 
-- include_tasks: manage_volume.yml
+- name: include volume management tasks
+  ansible.builtin.include_tasks: manage_volume.yml
   tags: [zfs, zfs_volumes, zfs_dataset]
   vars:
     zfs_volume_properties: "{{ zfs_volumes_properties_defaults | combine(zfs_volume.properties | default({})) }}"
@@ -30,13 +36,23 @@
   loop_control:
     loop_var: zfs_volume
 
-- include_tasks: manage_filesystem.yml
+- name: include filesystem management tasks
+  ansible.builtin.include_tasks: manage_filesystem.yml
   tags: [zfs, zfs_filesystem, zfs_dataset]
   vars:
-    zfs_filesystem_properties: "{{ zfs_filesystems_properties_defaults | combine(zfs_filesystem.properties | default({})) }}"
+    zfs_filesystem_properties: "{{
+        zfs_filesystems_properties_defaults |
+        combine(zfs_filesystem.properties |
+        default({}))
+      }}"
   loop: "{{ zfs_filesystems }}"
   loop_control:
     loop_var: zfs_filesystem
 
-- import_tasks: manage_services.yml
+- name: include snapshot configuration tasks
+  ansible.builtin.import_tasks: configure_snapshots.yml
+  tags: [zfs, zfs_snapshots, zfs_config, config]
+
+- name: include service management tasks
+  ansible.builtin.import_tasks: manage_services.yml
   tags: [zfs, zfs_service, service]

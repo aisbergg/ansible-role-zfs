@@ -1,0 +1,7 @@
+---
+__zfs_zrepl_config_defaults:
+  global:
+    logging:
+      - type: syslog
+        level: warn
+        format: human

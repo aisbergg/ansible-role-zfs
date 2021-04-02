@@ -1,0 +1,42 @@
+#jinja2: trim_blocks: "true", lstrip_blocks: "true"
+{{ ansible_managed | comment }}
+{% macro opt(option, var_name) %}{{ option ~ ' ' if snapshot[var_name] | default(false) | bool else '' }}{% endmacro %}
+{% macro snapshot_config(targets) %}
+{%   for target in targets %}
+{%     if target.snapshots | default([]) | length > 0 %}
+
+# snapshots for '{{ target.name }}'
+{%       for snapshot in target.snapshots %}
+{{ snapshot.cron_schedule | default('0 0 * * *') }}  root  sh -c '/usr/local/sbin/zfsnap snapshot {{ opt('-r', 'recursive') }}{{ opt('-s', 'skip_resilvering_pools') }}{{ opt('-S', 'skip_scrubbing_pools') }}{{ opt('-z', 'round_snapshot_creation_time') }}-a {{ snapshot.ttl | default('1w') }} -p "{{ snapshot.prefix | default('') }}" {{ target.name }} && /usr/local/sbin/zfsnap destroy {{ opt('-r', 'recursive') }}{{ opt('-s', 'skip_resilvering_pools') }}{{ opt('-S', 'skip_scrubbing_pools') }}-p "{{ snapshot.prefix | default('') }}" {{ target.name }}'
+{%       endfor %}
+{%     endif %}
+{%   endfor %}
+{% endmacro %}
+
+# ZFSNAP schedule
+# for more information see https://www.zfsnap.org/zfsnap_manpage.html
+
+{% if zfs_pools | default([]) | length > 0 %}
+# ------------------------------------------------------------------------------
+# ZPool Snapshots
+# ------------------------------------------------------------------------------
+{{ snapshot_config(zfs_pools) }}
+
+
+{% endif %}
+{% if zfs_filesystems | default([]) | length > 0 %}
+# ------------------------------------------------------------------------------
+# Filesystem Snapshots
+# ------------------------------------------------------------------------------
+{{ snapshot_config(zfs_filesystems) }}
+
+
+{% endif %}
+{% if zfs_volumes | default([]) | length > 0 %}
+# ------------------------------------------------------------------------------
+# Volume Snapshots
+# ------------------------------------------------------------------------------
+{{ snapshot_config(zfs_volumes) }}
+
+
+{% endif %}

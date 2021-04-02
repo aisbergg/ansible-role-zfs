@@ -1,19 +1,60 @@
 ---
-# install
-zfs_centos_repo: zfs-kmod
+# ------------------------------------------------------------------------------
+# ZFS Installation
+# ------------------------------------------------------------------------------
+
+# installation on CentOS systems
+zfs_centos_repo_dkms_url: "http://download.zfsonlinux.org/epel/{{ ansible_distribution_version }}/$basearch/"
+zfs_centos_repo_kmod_url: "http://download.zfsonlinux.org/epel/{{ ansible_distribution_version }}/kmod/$basearch/"
+# can be either kmod or dkms; for more information see:
+# https://openzfs.github.io/openzfs-docs/Getting%20Started/RHEL%20and%20CentOS.html
+zfs_centos_style: kmod
+
+# installation on Debian systems
 zfs_debian_repo: "{{ ansible_distribution_release }}-backports"
 
-# services
-zfs_services_enabled: {}
 
-zfs_use_zfs_mount_generator: false
 
-# configuration
+# ------------------------------------------------------------------------------
+# ZFS Service Management
+# ------------------------------------------------------------------------------
+
+# import ZFS pools by cache file
+zfs_service_import_cache_enabled: true
+# import ZFS pools by device scanning
+zfs_service_import_scan_enabled: false
+# ZFS mount mechanism
+zfs_service_mount_enabled: "{{ zfs_use_zfs_mount_generator | bool | ternary(false, true) }}"
+# ZFS file system shares
+zfs_service_share_enabled: false
+# wait for ZFS Volume (zvol) links in /dev
+zfs_service_volume_wait_enabled: true
+# ZFS Event Daemon (zed)
+zfs_service_zed_enabled: true
+
+# use systemd mount generator, to mount ZVolumes via systemd
+zfs_use_zfs_mount_generator: true
+
+
+
+# ------------------------------------------------------------------------------
+# ZFS Configuration
+# ------------------------------------------------------------------------------
+
 # https://zfsonlinux.org/manpages/0.8.4/man5/zfs-module-parameters.5.html
 zfs_kernel_module_parameters: {}
 
 # zpools and datasets
 zfs_scrub_schedule: monthly
+
+# set IO scheduler for the following HDDs to 'none'
+zfs_config_none_ioscheduler: []
+
+
+
+# ------------------------------------------------------------------------------
+# ZFS Pools and Datasets
+# ------------------------------------------------------------------------------
 
 zfs_pools: []
 zfs_pools_defaults: {}
@@ -46,7 +87,7 @@ zfs_volumes_properties_defaults:
 zfs_filesystems: []
 # https://zfsonlinux.org/manpages/0.8.4/man8/zfs.8.html
 zfs_filesystems_properties_defaults:
-  acltype: posixacl
+  acltype: posix
   atime: false
   canmount: true
   casesensitivity: sensitive
@@ -56,8 +97,23 @@ zfs_filesystems_properties_defaults:
   setuid: true
   snapdir: hidden
   sync: standard
-  utf8only: on
+  utf8only: true
   xattr: sa
 
-zfs_storage_defaults: {}
-zfs_storage_drive_wwids: []
+
+
+# ------------------------------------------------------------------------------
+# Automatic Snapshots using ZREPL
+# ------------------------------------------------------------------------------
+
+# configure zrepl; see https://zrepl.github.io/configuration/overview.html
+zfs_zrepl_config: {}
+
+# install and enable zrepl (https://github.com/zrepl/zrepl)
+zfs_zrepl_enabled: true
+
+# RPM repository URL of zrepl
+zfs_zrepl_centos_repo_url: "https://zrepl.cschwarz.com/rpm/repo"
+
+# DEB repository URL of zrepl
+zfs_zrepl_debian_repo_url: "https://zrepl.cschwarz.com/apt"

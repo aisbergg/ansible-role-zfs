@@ -1,0 +1,46 @@
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: vagrant
+  provider:
+    name: virtualbox
+
+platforms:
+  - name: instance
+    box: generic/centos8
+    memory: 1024
+    cpus: 1
+    provision: no
+    interfaces:
+      # `network_name` is the required identifier, other keys map to arguments.
+      # - network_name: private_network
+      #   ip: 192.168.50.20
+      #   guest: 80
+      #   host: 8080
+    # List of raw Vagrant `config` options.
+    # provider_raw_config_args:
+    #   - "customize [ 'modifyvm', :id, '--natdnshostresolver1', 'on' ]"
+    # Dictionary of `config` options.
+    config_options:
+      ssh.keep_alive: yes
+      ssh.remote_user: "'vagrant'"
+
+# provisioner:
+#   name: ansible
+#   config_options:
+#     defaults:
+#       stdout_callback: yaml
+#       bin_ansible_callbacks: yes
+#   inventory:
+#     host_vars:
+#       instance:
+
+lint: |
+  set -e
+  yamllint .
+  ansible-lint
+
+verifier:
+  name: testinfra

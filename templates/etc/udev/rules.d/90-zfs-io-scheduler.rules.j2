@@ -1,0 +1,7 @@
+#jinja2: trim_blocks: "true", lstrip_blocks: "true"
+{{ ansible_managed | comment }}
+
+{% for item in device_properties.results %}
+{% set properties = dict(item.stdout_lines | map('split', '=', 1)) %}
+ACTION=="add|change", KERNEL=="sd[a-z]", {{ 'ENV{ID_SERIAL}=="' ~ properties.ID_SERIAL ~ '"' if properties.ID_SERIAL is defined else 'ENV{ID_PART_TABLE_UUID}=="' ~ properties.ID_PART_TABLE_UUID ~ '"' }}, ATTR{queue/scheduler}="none"
+{% endfor %}

@@ -18,3 +18,7 @@ trim_trailing_whitespace = false
 
 [*.{yml,yaml,j2}]
 indent_size = 2
+
+[*.py]
+# isort options
+line_length = 120

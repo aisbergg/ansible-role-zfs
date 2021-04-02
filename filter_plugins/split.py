@@ -1,6 +1,6 @@
 # MIT License
 #
-# Copyright (c) 2020 Andre Lehmann
+# Copyright (c) 2021 Andre Lehmann
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,24 +21,27 @@
 # SOFTWARE.
 
 
-class TestModule(object):
+class FilterModule(object):
 
-    def tests(self):
-        return {
-            'boolean': self.is_boolean,
-        }
+    def filters(self):
+        return {"split": self.split}
 
-    def is_boolean(self, value):
-        """Test if a value is of type boolean.
+    def split(self, value, sep=None, maxsplit=-1):
+        """Split a string by a specified seperator string.
 
-        Jinja2 >= 2.11 comes a built-in boolean test, but most systems will ship
-        an older version. Until Ansible adopts the new Jinja2 version, this test
-        can be used as an alternative.
+        Splitting a string with Jinja can already accomplished by executing the
+        "split" method on strings, but when you want to use split in combination
+        with "map" for example, you need a filter like this one.
 
         Args:
-            value: A value, that shall be type tested
+            value (str): The string value to be splitted.
+            sep (str, optional): The seperator string.
+            maxsplit (int, optional): Number of splits to do. Defaults to "-1".
 
         Returns:
-            bool: True, if value is of type boolean, False otherwise.
+            list: A splitted representation of the string.
+
+        Examples:
+            {{ 'Hello World' | split(' ') }} -> ['Hello', 'World']
         """
-        return isinstance(value, bool)
+        return str(value).split(sep, maxsplit)

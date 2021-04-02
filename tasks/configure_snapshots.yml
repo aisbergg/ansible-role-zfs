@@ -1,0 +1,13 @@
+---
+- name: configure zrepl
+  ansible.builtin.template:
+    src: etc/zrepl/zrepl.yml.j2
+    dest: /etc/zrepl/zrepl.yml
+    owner: root
+    group: root
+    mode: 0644
+    validate: zrepl configcheck --config %s
+  notify: restart zrepl
+  when: zfs_zrepl_enabled | bool
+  vars:
+    cfg: "{{ __zfs_zrepl_config_defaults | combine(zfs_zrepl_config, recursive=True) }}"

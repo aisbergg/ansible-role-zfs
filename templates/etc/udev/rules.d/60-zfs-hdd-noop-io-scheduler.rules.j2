@@ -1,6 +1,0 @@
-#jinja2: trim_blocks: "true", lstrip_blocks: "true"
-{{ ansible_managed | comment }}
-
-{% for wwid in zfs_storage_drive_wwids %}
-ACTION=="add|change", KERNEL=="sd[a-z]", ATTRS{wwid}=="{{ wwid }}", ATTR{queue/scheduler}="noop"
-{% endfor %}

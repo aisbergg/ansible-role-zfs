@@ -1,5 +1,5 @@
 ---
-- name: Configure ZFS kernel parameters
+- name: configure ZFS kernel parameters
   template:
     src: etc/modprobe.d/zfs.conf.j2
     dest: /etc/modprobe.d/zfs.conf
@@ -10,7 +10,7 @@
     - update initramfs (Debian)
     - mkinitcpio (Arch Linux)
 
-- name: Configure ZFS
+- name: configure ZFS
   template:
     src: etc/default/zfs.j2
     dest: /etc/default/zfs
@@ -18,8 +18,16 @@
     group: root
     mode: 0644
 
-- name: Write udev rule to set noop scheduler
-  template:
-    src: etc/udev/rules.d/60-zfs-hdd-noop-io-scheduler.rules.j2
-    dest: /etc/udev/rules.d/60-zfs-hdd-noop-io-scheduler.rules
-  notify: reload udev rules
+- block:
+    - name: get serial of devices
+      command: "udevadm info -q property {{ item }}"
+      failed_when: false
+      register: device_properties
+      loop: "{{ zfs_config_none_ioscheduler }}"
+
+    - name: set IO scheduler of HDDs to 'none'
+      template:
+        src: etc/udev/rules.d/90-zfs-io-scheduler.rules.j2
+        dest: /etc/udev/rules.d/90-zfs-io-scheduler.rules
+        mode: 0644
+      notify: reload udev rules
