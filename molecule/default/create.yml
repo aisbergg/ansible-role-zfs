@@ -10,7 +10,7 @@
 
     - when: server.changed | default(false) | bool
       block:
-        - name: Populate instance config dict
+        - name: populate instance config dict
           ansible.builtin.set_fact:
             instance_conf_dict: {
               'instance': "{{ }}",
@@ -21,11 +21,11 @@
           with_items: "{{ server.results }}"
           register: instance_config_dict
 
-        - name: Convert instance config dict to a list
+        - name: convert instance config dict to a list
           ansible.builtin.set_fact:
             instance_conf: "{{ instance_config_dict.results | map(attribute='ansible_facts.instance_conf_dict') | list }}"
 
-        - name: Dump instance config
+        - name: dump instance config
           ansible.builtin.copy:
             content: |
               # Molecule managed

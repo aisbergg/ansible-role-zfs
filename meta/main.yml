@@ -3,7 +3,7 @@ dependencies: []
 
 galaxy_info:
   author: André Lehmann
-  namespace: aisberg
+  namespace: aisbergg
   role_name: zfs
   description: Install ZFS, create or import zpools and manage datasets.
   company: none
@@ -24,7 +24,7 @@ galaxy_info:
         - groovy
         - focal
         - bionic
-    # - name: Archlinux
+    # - name: ArchLinux
     #   versions:
     #     - all
 

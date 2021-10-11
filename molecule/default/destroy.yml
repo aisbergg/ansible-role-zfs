@@ -9,11 +9,11 @@
 
     # Mandatory configuration for Molecule to function.
 
-    - name: Populate instance config
+    - name: populate instance config
       ansible.builtin.set_fact:
         instance_conf: {}
 
-    - name: Dump instance config
+    - name: dump instance config
       ansible.builtin.copy:
         content: |
           # Molecule managed
