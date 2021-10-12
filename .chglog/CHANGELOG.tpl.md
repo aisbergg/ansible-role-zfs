@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 {{ $strippedTagName := regexReplaceAll "^v" .Tag.Name "" -}}
 <a name="{{ $strippedTagName }}"></a>
 ## [{{ $strippedTagName }}]({{ if .Tag.Previous }}{{ $.Info.RepositoryURL }}/compare/{{ .Tag.Previous.Name }}...{{ .Tag.Name }}{{ end }}) ({{ datetime "2006-01-02" .Tag.Date }})
-
+{{ if .Tag.Previous }}
 {{ range .CommitGroups -}}
 ### {{ .Title }}
 
@@ -36,5 +36,8 @@ All notable changes to this project will be documented in this file.
 {{ .Body }}
 {{ end }}
 {{ end -}}
+{{ end -}}
+{{ else }}
+Initial Release
 {{ end -}}
 {{ end -}}

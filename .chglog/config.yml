@@ -1,0 +1,37 @@
+style: github
+template: CHANGELOG.tpl.md
+info:
+  title: CHANGELOG
+  repository_url: https://github.com/aisbergg/ansible-role-zfs
+options:
+  commits:
+    filters:
+      Type:
+        - build
+        - chore
+        - ci
+        - docs
+        - feat
+        - fix
+        - perf
+        - refactor
+  commit_groups:
+    title_maps:
+      build: Build System
+      chore: Chores
+      ci: CI Configuration
+      docs: Documentation
+      feat: Features
+      fix: Bug Fixes
+      perf: Performance Improvements
+      refactor: Code Refactoring
+  header:
+    pattern: "^(\\w*)(?:\\(([\\w\\$\\.\\-\\*\\s]*)\\))?!?\\:\\s(.*)$"
+    pattern_maps:
+      - Type
+      - Scope
+      - Subject
+  notes:
+    keywords:
+      - BREAKING CHANGE
+      - SECURITY
