@@ -21,6 +21,7 @@ galaxy_info:
         - buster
     - name: Ubuntu
       versions:
+        - hirsute
         - groovy
         - focal
         - bionic
@@ -31,3 +32,4 @@ galaxy_info:
   galaxy_tags:
     - zfs
     - zpool
+    - filesystem

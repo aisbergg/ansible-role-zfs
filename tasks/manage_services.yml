@@ -20,17 +20,17 @@
     - name: zfs-import.target
       enabled: true
     - name: zfs-import-cache
-      enabled: "{{ zfs_service_import_cache_enabled }}"
+      enabled: "{{ zfs_service_import_cache_enabled | bool }}"
     - name: zfs-import-scan
-      enabled: "{{ zfs_service_import_scan_enabled }}"
+      enabled: "{{ zfs_service_import_scan_enabled | bool }}"
     - name: zfs-mount
-      enabled: "{{ zfs_service_mount_enabled }}"
+      enabled: "{{ zfs_service_mount_enabled | bool }}"
     - name: zfs-share
-      enabled: "{{ zfs_service_share_enabled }}"
+      enabled: "{{ zfs_service_share_enabled | bool }}"
     - name: zfs-volume-wait
-      enabled: "{{ zfs_service_volume_wait_enabled }}"
+      enabled: "{{ zfs_service_volume_wait_enabled | bool }}"
     - name: zfs-zed
-      enabled: "{{ zfs_service_zed_enabled }}"
+      enabled: "{{ zfs_service_zed_enabled | bool }}"
 
 
 
@@ -39,7 +39,7 @@
 # ------------------------------------------------------------------------------
 
 - when:
-    - zfs_use_zfs_mount_generator
+    - zfs_use_zfs_mount_generator | bool
     - not (ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'bionic')
   block:
     - name: enable the ZED script
@@ -155,7 +155,7 @@
         name: "zpool-scrub@{{ item.name }}.timer"
         enabled: true
         state: started
-      when: item.scrub | default(true)
+      when: item.scrub | default(true) | bool
       loop: "{{ zfs_pools }}"
       loop_control:
         label: "{{ item.name }}"
@@ -178,7 +178,7 @@
 
 
 # ------------------------------------------------------------------------------
-# zrepl Service
+# ZREPL Service
 # ------------------------------------------------------------------------------
 
 - name: manage zrepl service

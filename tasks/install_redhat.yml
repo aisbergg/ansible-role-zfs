@@ -3,7 +3,7 @@
 # ZFS Installation
 # ------------------------------------------------------------------------------
 
-- name: add ZFS repository (CentOS)
+- name: add ZFS repository (RedHat)
   ansible.builtin.template:
     src: etc/yum.repos.d/zfs.repo.j2
     dest: /etc/yum.repos.d/zfs.repo
@@ -11,7 +11,7 @@
     group: root
     mode: 0644
 
-- name: copy ZFS repo GPG key (CentOS)
+- name: copy ZFS repo GPG key (RedHat)
   ansible.builtin.copy:
     src: centos/RPM-GPG-KEY-zfsonlinux
     dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-zfsonlinux
@@ -19,24 +19,24 @@
     group: root
     mode: 0644
 
-- name: import ZFS repo GPG key (CentOS)
+- name: import ZFS repo GPG key (RedHat)
   ansible.builtin.rpm_key:
     key: /etc/pki/rpm-gpg/RPM-GPG-KEY-zfsonlinux
     state: present
     fingerprint: C93A FFFD 9F3F 7B03 C310 CEB6 A9D5 A1C0 F14A B620
 
-- name: install Linux kernel headers (CentOS)
+- name: install Linux kernel headers (RedHat)
   ansible.builtin.dnf:
     name: "kernel-devel-{{ ansible_kernel }}"
     state: present
-  when: zfs_centos_style == 'dkms'
+  when: zfs_redhat_style == 'dkms'
 
-- name: install ZFS (CentOS)
+- name: install ZFS (RedHat)
   ansible.builtin.dnf:
     name: zfs
     state: present
 
-- name: ensure ZFS kernel module is loaded (CentOS)
+- name: ensure ZFS kernel module is loaded (RedHat)
   modprobe:
     name: zfs
 
@@ -48,7 +48,7 @@
 
 - when: zfs_zrepl_enabled
   block:
-    - name: add zrepl repository (CentOS)
+    - name: add zrepl repository (RedHat)
       ansible.builtin.template:
         src: etc/yum.repos.d/zrepl.repo.j2
         dest: /etc/yum.repos.d/zrepl.repo
@@ -56,7 +56,7 @@
         group: root
         mode: 0644
 
-    - name: copy zrepl repo GPG key (CentOS)
+    - name: copy zrepl repo GPG key (RedHat)
       ansible.builtin.copy:
         src: centos/RPM-GPG-KEY-zrepl
         dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-zrepl
@@ -64,13 +64,13 @@
         group: root
         mode: 0644
 
-    - name: import zrepl repo GPG key (CentOS)
+    - name: import zrepl repo GPG key (RedHat)
       ansible.builtin.rpm_key:
         key: /etc/pki/rpm-gpg/RPM-GPG-KEY-zrepl
         state: present
         fingerprint: F6F6 E8EA 6F2F 1462 2878 B5DE 50E3 4417 826E 2CE6
 
-    - name: install zrepl (CentOS)
+    - name: install zrepl (RedHat)
       ansible.builtin.dnf:
         name: zrepl
         state: present

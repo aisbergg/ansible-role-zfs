@@ -1,6 +1,6 @@
 ---
 - name: configure ZFS kernel parameters
-  template:
+  ansible.builtin.template:
     src: etc/modprobe.d/zfs.conf.j2
     dest: /etc/modprobe.d/zfs.conf
     owner: root
@@ -11,7 +11,7 @@
     - mkinitcpio (Arch Linux)
 
 - name: configure ZFS
-  template:
+  ansible.builtin.template:
     src: etc/default/zfs.j2
     dest: /etc/default/zfs
     owner: root
@@ -20,13 +20,14 @@
 
 - block:
     - name: get serial of devices
-      command: "udevadm info -q property {{ item }}"
+      ansible.builtin.command: "udevadm info -q property {{ item }}"
       failed_when: false
       register: device_properties
+      changed_when: false
       loop: "{{ zfs_config_none_ioscheduler }}"
 
     - name: set IO scheduler of HDDs to 'none'
-      template:
+      ansible.builtin.template:
         src: etc/udev/rules.d/90-zfs-io-scheduler.rules.j2
         dest: /etc/udev/rules.d/90-zfs-io-scheduler.rules
         mode: 0644

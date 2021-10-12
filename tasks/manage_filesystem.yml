@@ -1,4 +1,13 @@
 ---
+- name: assert correctness of ZFS filesystem parameters
+  ansible.builtin.assert:
+    that:
+      - zfs_filesystem.name is defined and zfs_filesystem.name is string
+      - (zfs_filesystem.properties | default({})) is mapping
+      - (zfs_filesystem.state | default('present')) in ['present', 'absent']
+    quiet: true
+    fail_msg: ZFS filesystem parameters are invalid
+
 - name: gather properties of '{{ zfs_filesystem.name | mandatory }}'
   community.general.zfs_facts:
     name: "{{ zfs_filesystem.name }}"

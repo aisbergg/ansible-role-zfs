@@ -4,11 +4,11 @@
 # ------------------------------------------------------------------------------
 
 # installation on CentOS systems
-zfs_centos_repo_dkms_url: "http://download.zfsonlinux.org/epel/{{ ansible_distribution_version }}/$basearch/"
-zfs_centos_repo_kmod_url: "http://download.zfsonlinux.org/epel/{{ ansible_distribution_version }}/kmod/$basearch/"
 # can be either kmod or dkms; for more information see:
 # https://openzfs.github.io/openzfs-docs/Getting%20Started/RHEL%20and%20CentOS.html
-zfs_centos_style: kmod
+zfs_redhat_style: kmod
+zfs_redhat_repo_dkms_url: "http://download.zfsonlinux.org/epel/{{ ansible_distribution_version }}/$basearch/"
+zfs_redhat_repo_kmod_url: "http://download.zfsonlinux.org/epel/{{ ansible_distribution_version }}/kmod/$basearch/"
 
 # installation on Debian systems
 zfs_debian_repo: "{{ ansible_distribution_release }}-backports"
@@ -41,13 +41,14 @@ zfs_use_zfs_mount_generator: true
 # ZFS Configuration
 # ------------------------------------------------------------------------------
 
-# https://zfsonlinux.org/manpages/0.8.4/man5/zfs-module-parameters.5.html
+# https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Module%20Parameters.html?highlight=zfs_arc_max
 zfs_kernel_module_parameters: {}
 
-# zpools and datasets
+# time schedule for zpool scrubs, for valid time formats see:
+# https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events
 zfs_scrub_schedule: monthly
 
-# set IO scheduler for the following HDDs to 'none'
+# set IO scheduler for listed HDDs to 'none'
 zfs_config_none_ioscheduler: []
 
 
@@ -57,7 +58,6 @@ zfs_config_none_ioscheduler: []
 # ------------------------------------------------------------------------------
 
 zfs_pools: []
-zfs_pools_defaults: {}
 #   - name:
 #     vdev: >-
 #       mirror
@@ -74,9 +74,11 @@ zfs_pools_defaults: {}
 #     filesystem_properties:
 #     extra_import_options: ""
 #     extra_create_options: ""
+# https://openzfs.github.io/openzfs-docs/man/7/zpoolprops.7.html?highlight=ashift
+zfs_pools_defaults: {}
 
 zfs_volumes: []
-# https://zfsonlinux.org/manpages/0.8.4/man8/zfs.8.html
+# https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html?highlight=volsize
 zfs_volumes_properties_defaults:
   volblocksize: 8K
   volsize: 1G
@@ -85,7 +87,7 @@ zfs_volumes_properties_defaults:
   sync: standard
 
 zfs_filesystems: []
-# https://zfsonlinux.org/manpages/0.8.4/man8/zfs.8.html
+# https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html?highlight=volsize
 zfs_filesystems_properties_defaults:
   acltype: posix
   atime: false
@@ -113,7 +115,7 @@ zfs_zrepl_config: {}
 zfs_zrepl_enabled: true
 
 # RPM repository URL of zrepl
-zfs_zrepl_centos_repo_url: "https://zrepl.cschwarz.com/rpm/repo"
+zfs_zrepl_redhat_repo_url: "https://zrepl.cschwarz.com/rpm/repo"
 
 # DEB repository URL of zrepl
 zfs_zrepl_debian_repo_url: "https://zrepl.cschwarz.com/apt"

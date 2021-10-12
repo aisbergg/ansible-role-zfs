@@ -1,5 +1,14 @@
 ---
-- name: gather properties of '{{ zfs_volume.name | mandatory }}'
+- name: assert correctness of ZFS volume parameters
+  ansible.builtin.assert:
+    that:
+      - zfs_volume.name is defined and zfs_volume.name is string
+      - (zfs_volume.properties | default({})) is mapping
+      - (zfs_volume.state | default('present')) in ['present', 'absent']
+    quiet: true
+    fail_msg: ZFS volume parameters are invalid
+
+- name: gather properties of '{{ zfs_volume.name }}'
   community.general.zfs_facts:
     name: "{{ zfs_volume.name }}"
   failed_when: false

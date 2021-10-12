@@ -1,4 +1,18 @@
 ---
+- name: assert correctness of zpool parameters
+  ansible.builtin.assert:
+    that:
+      - zfs_pool.name is defined and zfs_pool.name is string
+      - zfs_pool.vdev is defined and zfs_pool.vdev is string
+      - (zfs_pool.scrub | default(true) | bool) is boolean
+      - (zfs_pool.dont_enable_features | default(false) | bool) is boolean
+      - (zfs_pool.properties | default({})) is mapping
+      - (zfs_pool.filesystem_properties | default({})) is mapping
+      - (zfs_pool.extra_import_options | default('')) is string
+      - (zfs_pool.extra_create_options | default('')) is string
+    quiet: true
+    fail_msg: ZPool parameters are invalid
+
 # import a zpool
 - when:
     - zfs_pool.name not in available_zpools.stdout_lines
@@ -54,7 +68,7 @@
       ansible.builtin.set_fact:
         zpool_create_command: >-
           zpool create
-          {{ '-d ' if zfs_pool.dont_enable_features | default(false) else '' }}
+          {{ '-d ' if zfs_pool.dont_enable_features | default(false) | bool else '' }}
           {% for property, value in (prepared_zpool_properties.properties | dictsort) %}
           -o {{ (property ~ '=' ~ value) | quote }}
           {% endfor %}
@@ -80,7 +94,7 @@
 - when: zfs_pool.name in available_zpools.stdout_lines
   block:
     - name: gather properties of '{{ zfs_pool.name }}'
-      zpool_facts:
+      community.general.zpool_facts:
         name: "{{ zfs_pool.name }}"
         parsable: true
       failed_when: false
