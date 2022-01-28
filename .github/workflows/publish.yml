@@ -1,0 +1,19 @@
+name: Publish on Ansible Galaxy
+
+on:
+  workflow_run:
+    workflows: ["Create GitHub Release"]
+    types:
+      - completed
+
+jobs:
+  publish-on-ansible-galaxy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Publish
+        uses: robertdebock/galaxy-action@1.1.1
+        with:
+          galaxy_api_key: ${{ secrets.GALAXY_API_KEY }}
