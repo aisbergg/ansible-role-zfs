@@ -36,6 +36,13 @@
   ansible.builtin.modprobe:
     name: zfs
 
+- name: ensure ZFS kernel module is loaded in boot (Debian)
+  ansible.builtin.copy:
+    content: zfs
+    dest: /etc/modules-load.d/zfs.conf
+    owner: root
+    group: root
+    mode: 0644
 
 
 # ------------------------------------------------------------------------------
