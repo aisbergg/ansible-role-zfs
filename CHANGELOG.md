@@ -2,15 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
-- [3.1.0 (2022-01-28)](#3.1.0-2022-01-28)
+- [3.2.0 (2022-03-31)](#320-2022-03-31)
+- [3.1.0 (2022-01-28)](#310-2022-01-28)
 - [3.0.0 (2021-10-12)](#300-2021-10-12)
 - [2.0.0 (2021-04-02)](#200-2021-04-02)
 - [1.0.0 (2020-08-25)](#100-2020-08-25)
 
 ---
 
+<a name="3.2.0"></a>
+## [3.2.0](https://github.com/aisbergg/ansible-role-zfs/compare/v3.1.0...v3.2.0) (2022-03-31)
+
+### Bug Fixes
+
+- make udev tasks also work in check mode
+- run ZED script only if it is enabled
+- run mount generator tasks before service mgt tasks
+
+### CI Configuration
+
+- add branch explicitly to make Ansible import action happy
+- bump Ansible Galaxy action version
+
+### Chores
+
+- don't use bump2version to include the CHANGELOG in the bump commit, it doesn't do a good job
+
+### Documentation
+
+- update links to manpages
+
+### Features
+
+- load kernel module on boot, even if no pools are created first
+
+
 <a name="3.1.0"></a>
-## [3.1.0](https://github.com/aisbergg/ansible-role-zfs/compare/v3.0.0...3.1.0) (2022-01-28)
+## [3.1.0](https://github.com/aisbergg/ansible-role-zfs/compare/v3.0.0...v3.1.0) (2022-01-28)
 
 ### Bug Fixes
 
