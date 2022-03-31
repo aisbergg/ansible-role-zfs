@@ -75,7 +75,7 @@ None.
     # Configuration
     #
 
-    # https://zfsonlinux.org/manpages/0.8.4/man5/zfs-module-parameters.5.html
+    # https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Module%20Parameters.html#zfs-module-parameters
     zfs_kernel_module_parameters:
       # use 1/4 of the memory for ZFS ARC
       zfs_arc_max: "{{ (ansible_memtotal_mb * 1024**2 * 0.25) | int }}"
@@ -134,7 +134,7 @@ None.
       compression: lz4
       dedup: false
 
-    # https://zfsonlinux.org/manpages/0.8.6/man8/zfs.8.html
+    # https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html
     zfs_volumes_properties_defaults: "{{
         _zfs_volumes_properties | combine(
         _zfs_performance_tuning_async_only

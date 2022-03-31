@@ -41,7 +41,7 @@ zfs_use_zfs_mount_generator: true
 # ZFS Configuration
 # ------------------------------------------------------------------------------
 
-# https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Module%20Parameters.html?highlight=zfs_arc_max
+# https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Module%20Parameters.html
 zfs_kernel_module_parameters: {}
 
 # time schedule for zpool scrubs, for valid time formats see:
@@ -74,11 +74,11 @@ zfs_pools: []
 #     filesystem_properties:
 #     extra_import_options: ""
 #     extra_create_options: ""
-# https://openzfs.github.io/openzfs-docs/man/7/zpoolprops.7.html?highlight=ashift
+# https://openzfs.github.io/openzfs-docs/man/7/zpoolprops.7.html
 zfs_pools_defaults: {}
 
 zfs_volumes: []
-# https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html?highlight=volsize
+# https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html
 zfs_volumes_properties_defaults:
   volblocksize: 8K
   volsize: 1G
@@ -87,7 +87,7 @@ zfs_volumes_properties_defaults:
   sync: standard
 
 zfs_filesystems: []
-# https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html?highlight=volsize
+# https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html
 zfs_filesystems_properties_defaults:
   acltype: posix
   atime: false

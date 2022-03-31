@@ -1,4 +1,4 @@
 ---
 - name: fail Arch Linux installation
   ansible.builtin.fail:
-    msg: Arch Linux is not yet supported
+    msg: Arch Linux is not yet supported by this role
