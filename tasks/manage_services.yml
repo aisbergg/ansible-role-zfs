@@ -18,7 +18,9 @@
       ansible.builtin.systemd:
         name: zfs-zed
         state: restarted
-      when: history_event_zedlet.changed
+      when:
+        - zfs_service_zed_enabled
+        - history_event_zedlet.changed
 
     - name: ensure mount generator cache directory exists
       ansible.builtin.file:
