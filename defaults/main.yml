@@ -9,6 +9,7 @@
 zfs_redhat_style: kmod
 zfs_redhat_repo_dkms_url: "http://download.zfsonlinux.org/epel/{{ ansible_distribution_version }}/$basearch/"
 zfs_redhat_repo_kmod_url: "http://download.zfsonlinux.org/epel/{{ ansible_distribution_version }}/kmod/$basearch/"
+zfs_redhat_repo_proxy:
 
 # installation on Debian systems
 zfs_debian_repo: "{{ ansible_distribution_release }}-backports"
