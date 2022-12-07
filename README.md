@@ -15,6 +15,7 @@ This Ansible role installs the ZFS filesystem module, creates or imports zpools 
 | `zfs_redhat_style` | `kmod` | Style of ZFS module installation. Can be either kmod or dkms.  Applies only to RedHat systems. See [official documentation](https://openzfs.github.io/openzfs-docs/Getting%20Started/RHEL-based%20distro/index.html#rhel-based-distro) for information on DKMS and kmod version of openZFS. |
 | `zfs_redhat_repo_dkms_url` | `http://download.zfsonlinux.org/`<br>`epel/{{ ansible_distribution_version }}/$basearch/` | Repository URL used for DKMS installation of ZFS. Applies only to RedHat systems. |
 | `zfs_redhat_repo_kmod_url` | `http://download.zfsonlinux.org/`<br>`epel/{{ ansible_distribution_version }}/kmod/$basearch/` | Repository URL used for kmod installation of ZFS. Applies only to RedHat systems. |
+| `zfs_redhat_repo_proxy` |  | YUM/DNF repository proxy URL |
 | `zfs_debian_repo` | `{{ ansible_distribution_release }}-backports` | Repository used for installation. Applies only to Debian systems. |
 | `zfs_service_import_cache_enabled` | `true` | Enable service to import ZFS pools by cache file. |
 | `zfs_service_import_scan_enabled` | `false` | Enable service to import ZFS pools by device scanning. |
