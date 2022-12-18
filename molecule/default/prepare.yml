@@ -36,7 +36,7 @@
         - 1
 
     - name: create loop devices
-      command: "losetup -P /dev/loop{{ item }} /zfs{{ item }}.img"
+      ansible.builtin.command: "losetup -P /dev/loop{{ item }} /zfs{{ item }}.img"
       loop:
         - 0
         - 1
