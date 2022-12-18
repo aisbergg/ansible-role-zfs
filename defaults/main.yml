@@ -3,6 +3,9 @@
 # ZFS Installation
 # ------------------------------------------------------------------------------
 
+# enables/disables management of ZFS package repository
+zfs_manage_repository: true
+
 # installation on CentOS systems
 # can be either kmod or dkms; for more information see:
 # https://openzfs.github.io/openzfs-docs/Getting%20Started/RHEL%20and%20CentOS.html
