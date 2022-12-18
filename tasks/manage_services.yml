@@ -177,6 +177,64 @@
             }}"
 
 
+# ------------------------------------------------------------------------------
+# ZFS Trim Service
+# ------------------------------------------------------------------------------
+
+- block:
+    - name: remove trim cron job
+      ansible.builtin.file:
+        path: /etc/cron.d/zfsutils-linux
+        state: absent
+
+    - name: create trim service
+      ansible.builtin.template:
+        src: etc/systemd/system/zpool-trim@.service.j2
+        dest: /etc/systemd/system/zpool-trim@.service
+        owner: root
+        group: root
+        mode: 0644
+      register: trim_service
+
+    - name: create trim timer
+      ansible.builtin.template:
+        src: etc/systemd/system/zpool-trim@.timer.j2
+        dest: /etc/systemd/system/zpool-trim@.timer
+        owner: root
+        group: root
+        mode: 0644
+      register: trim_timer
+
+    - name: reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
+      when: trim_service.changed or trim_timer.changed or journald_service.changed
+
+    - name: enable trim timer
+      ansible.builtin.systemd:
+        name: "zpool-trim@{{ item.name }}.timer"
+        enabled: true
+        state: started
+      when: item.trim | default(false) | bool
+      loop: "{{ zfs_pools }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: gather service facts
+      ansible.builtin.service_facts:
+
+    - name: disable undefined trim timer
+      ansible.builtin.systemd:
+        name: "zpool-trim@{{ item }}.timer"
+        enabled: false
+        state: stopped
+      loop: "{{
+              ansible_facts.services.keys() |
+              select('match', 'zpool-trim@.+\\.service') |
+              map('regex_replace', 'zpool-trim@(.+)\\.service', '\\1') | list |
+              difference(zfs_pools | selectattr2('trim', '==', true, default=true) | map(attribute='name') | list)
+            }}"
+
 
 # ------------------------------------------------------------------------------
 # ZREPL Service

@@ -1,0 +1,11 @@
+{{ ansible_managed | comment }}
+
+[Unit]
+Description=Trim ZFS Pool ({{ zfs_trim_schedule }})
+
+[Timer]
+OnCalendar={{ zfs_trim_schedule }}
+Persistent=true
+
+[Install]
+WantedBy=timers.target

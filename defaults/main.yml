@@ -48,9 +48,13 @@ zfs_use_zfs_mount_generator: true
 # https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Module%20Parameters.html
 zfs_kernel_module_parameters: {}
 
-# time schedule for zpool scrubs, for valid time formats see:
+# time schedule for zpool scrubs; for valid time formats see:
 # https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events
 zfs_scrub_schedule: monthly
+
+# time schedule for trimming zpools; for valid time formats see:
+# https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events
+zfs_trim_schedule: weekly
 
 # set IO scheduler for listed HDDs to 'none'
 zfs_config_none_ioscheduler: []
