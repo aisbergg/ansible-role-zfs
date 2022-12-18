@@ -33,7 +33,7 @@
     - zfs-initramfs
 
 - name: ensure ZFS kernel module is loaded (Debian)
-  ansible.builtin.modprobe:
+  community.general.modprobe:
     name: zfs
 
 - name: ensure ZFS kernel module is loaded in boot (Debian)
