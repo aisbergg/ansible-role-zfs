@@ -1,6 +1,6 @@
 # MIT License
 #
-# Copyright (c) 2020 Andre Lehmann
+# Copyright (c) 2022 Andre Lehmann
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 from collections.abc import Iterable
 
 from ansible import errors
-from jinja2.filters import environmentfilter
+from jinja2.utils import pass_environment
 from jinja2.runtime import Undefined
 
 
@@ -32,7 +32,7 @@ class FilterModule(object):
     def filters(self):
         return {"selectattr2": self.selectattr2}
 
-    @environmentfilter
+    @pass_environment
     def selectattr2(self, environment, seq, attr, func_name, *args, **kwargs):
         """Filter a sequence of objects by applying a test to the specified
         attribute of each object, and only selecting the objects with the test
