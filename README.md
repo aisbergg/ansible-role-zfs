@@ -12,6 +12,7 @@ This Ansible role installs the ZFS filesystem module, creates or imports zpools 
 
 | Variable | Default | Comments |
 |----------|---------|----------|
+| `zfs_manage_repository` | `true` | Manage package repositories (YUM, APT). |
 | `zfs_redhat_style` | `kmod` | Style of ZFS module installation. Can be either kmod or dkms.  Applies only to RedHat systems. See [official documentation](https://openzfs.github.io/openzfs-docs/Getting%20Started/RHEL-based%20distro/index.html#rhel-based-distro) for information on DKMS and kmod version of openZFS. |
 | `zfs_redhat_repo_dkms_url` | `http://download.zfsonlinux.org/`<br>`epel/{{ ansible_distribution_version }}/$basearch/` | Repository URL used for DKMS installation of ZFS. Applies only to RedHat systems. |
 | `zfs_redhat_repo_kmod_url` | `http://download.zfsonlinux.org/`<br>`epel/{{ ansible_distribution_version }}/kmod/$basearch/` | Repository URL used for kmod installation of ZFS. Applies only to RedHat systems. |
@@ -26,6 +27,7 @@ This Ansible role installs the ZFS filesystem module, creates or imports zpools 
 | `zfs_use_zfs_mount_generator` | `true` | Enable Systemd Mount Generator, to automatically mount volumes on boot with Systemd. |
 | `zfs_kernel_module_parameters` | `{}` | Dictionary (key-value pairs) of ZFS kernel module parameters. See [official documentation](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Module%20Parameters.html?highlight=zfs_arc_max) for available parameters. |
 | `zfs_scrub_schedule` | `monthly` | Time schedule for zpool scrubs. Valid options can be looked up [here](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events). |
+| `zfs_trim_schedule` | `weekly` | Time schedule for trim operations (for SSDs or virtual drives). Valid options can be looked up [here](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events). |
 | `zfs_config_none_ioscheduler` | `[]` | Set IO scheduler for the listed HDDs to `none`. |
 | `zfs_pools` | `[]` | List of ZFS Pools (zpools). |
 | **`zfs_pools[].name`** |  | Name of the ZPool. |
@@ -55,7 +57,7 @@ This Ansible role installs the ZFS filesystem module, creates or imports zpools 
 
 ## Dependencies
 
-None.
+Depends on `community.general` collection.
 
 ## Example Playbook
 
@@ -83,6 +85,8 @@ None.
 
     # schedule for ZFS scrubs
     zfs_scrub_schedule: monthly
+    # schedule for TRIM
+    zfs_trim_schedule: weekly
 
     _zfs_performance_tuning_default:
       # store less metadata (still redundant in mirror setups)
