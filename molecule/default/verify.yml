@@ -1,0 +1,91 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  vars:
+
+  tasks:
+    - name: gather package facts
+      ansible.builtin.package_facts:
+
+    - name: check if ZFS is installed
+      ansible.builtin.assert:
+        that:
+          - "'zfs-dkms' in ansible_facts.packages"
+          - "ansible_os_family == 'RedHat' or 'zfs-initramfs' in ansible_facts.packages"
+          - "ansible_os_family == 'RedHat' or 'zfs-zed' in ansible_facts.packages"
+          - "ansible_os_family == 'RedHat' or 'zfsutils-linux' in ansible_facts.packages"
+          - "'zrepl' in ansible_facts.packages"
+
+    - name: gather service facts
+      ansible.builtin.service_facts:
+
+    - name: check if services are enabled and running
+      ansible.builtin.assert:
+        that:
+          - "'zfs-import-cache.service' in ansible_facts.services"
+          - "'zfs-import-scan.service' in ansible_facts.services"
+          - "'zfs-import.service' in ansible_facts.services"
+          - "'zfs-load-key.service' in ansible_facts.services"
+          - "ansible_os_family == 'RedHat' or 'zfs-load-module.service' in ansible_facts.services"
+          - "'zfs-mount.service' in ansible_facts.services"
+          - "'zfs-scrub@.service' in ansible_facts.services"
+          - "'zfs-share.service' in ansible_facts.services"
+          - "'zfs-volume-wait.service' in ansible_facts.services"
+          - "'zfs-zed.service' in ansible_facts.services"
+          - "ansible_facts.services['zfs-import-cache.service'].status == 'enabled'"
+          - "ansible_os_family == 'RedHat' or ansible_facts.services['zfs-load-module.service'].status == 'enabled'"
+          - "ansible_facts.services['zfs-volume-wait.service'].status == 'enabled'"
+          - "ansible_facts.services['zrepl.service'].status == 'enabled'"
+
+    - name: get number of zpools
+      ansible.builtin.shell: "set -o pipefail; zpool list | tail -n+2 | wc -l"
+      args:
+        executable: /bin/bash
+      register: number_of_zpools
+      changed_when: false
+
+    - name: assert number of pools
+      ansible.builtin.assert:
+        that: number_of_zpools.stdout == '1'
+
+    - name: get zfs filesystems
+      ansible.builtin.shell: "set -o pipefail; zfs list | awk 'FNR >1' | awk '{print $1}'"
+      args:
+        executable: /bin/bash
+      register: zfs_filesystems
+      changed_when: false
+
+    - name: assert filesystems
+      ansible.builtin.assert:
+        that:
+          - "zfs_filesystems.stdout_lines | length == 11"
+          - "'rpool' in zfs_filesystems.stdout_lines"
+          - "'rpool/ROOT' in zfs_filesystems.stdout_lines"
+          - "'rpool/ROOT/default' in zfs_filesystems.stdout_lines"
+          - "'rpool/home' in zfs_filesystems.stdout_lines"
+          - "'rpool/home/root' in zfs_filesystems.stdout_lines"
+          - "'rpool/var' in zfs_filesystems.stdout_lines"
+          - "'rpool/var/cache' in zfs_filesystems.stdout_lines"
+          - "'rpool/var/lib' in zfs_filesystems.stdout_lines"
+          - "'rpool/var/lib/docker' in zfs_filesystems.stdout_lines"
+          - "'rpool/var/log' in zfs_filesystems.stdout_lines"
+          - "'rpool/var/spool' in zfs_filesystems.stdout_lines"
+
+    - name: restart zrepl to ensure at least one snapshot has been created
+      ansible.builtin.systemd:
+        name: zrepl.service
+        state: restarted
+
+    - name: get zfs filesystems
+      ansible.builtin.shell: "set -o pipefail; zfs list -t snapshot | awk 'FNR >1' | awk '{print $1}'"
+      args:
+        executable: /bin/bash
+      register: zfs_filesystems
+      changed_when: false
+
+    - name: assert filesystems
+      ansible.builtin.assert:
+        that:
+          - "zfs_filesystems.stdout_lines | length > 0"
+          - "'rpool/home@auto_' in zfs_filesystems.stdout"

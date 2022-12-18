@@ -1,0 +1,13 @@
+# PIP Requirements File
+#
+# The listed versions of Ansible and Jinja were tested to work with the role.
+# Any previous versions might not be compatible and are therefore not supported.
+# To install the PIP requirements run the following command:
+#
+#     `python -m pip --user install -r requirements.txt`
+#
+# See the PIP requirements file documentation for details:
+# https://pip.pypa.io/en/stable/user_guide/#requirements-files
+
+ansible>=2.10
+jinja2>=2.11.2

@@ -1,7 +1,166 @@
 ---
 - name: Converge
   hosts: all
-  tasks:
-    - name: "Include aisbergg.zfs"
-      include_role:
-        name: "aisbergg.zfs"
+  become: true
+  vars:
+    #
+    # Installation
+    #
+
+    zfs_redhat_style: dkms
+
+    #
+    # Service
+    #
+
+    # generate mount points using systemd
+    zfs_use_zfs_mount_generator: true
+    # use zfs_mount_generator but don't invoke ZED (Docker triggers it quite often)
+    zfs_service_zed_enabled: false
+
+
+    #
+    # Configuration
+    #
+
+    # https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Module%20Parameters.html#zfs-module-parameters
+    zfs_kernel_module_parameters:
+      # use 1/4 of the memory for ZFS ARC
+      zfs_arc_max: "{{ (ansible_memtotal_mb * 1024**2 * 0.25) | int }}"
+
+    # schedule for ZFS scrubs
+    zfs_scrub_schedule: monthly
+
+    _zfs_performance_tuning_default:
+      # store less metadata (still redundant in mirror setups)
+      redundant_metadata: most
+      # use standard behaviour for synchronous writes
+      sync: standard
+
+    _zfs_performance_tuning_async_only:
+      # store less metadata (still redundant in mirror setups)
+      redundant_metadata: most
+      # turn synchronous writes into asynchronous ones
+      sync: disabled
+
+    _zfs_performance_tuning_ssd:
+      # use standard behaviour for synchronous writes
+      sync: standard
+      # store less metadata (still redundant in mirror setups)
+      redundant_metadata: most
+      # optimize synchronous operations to write directly to disk instead of writing
+      # to log. On HDDs this decreases the latency, but won't do much on SSDs.
+      logbias: throughput
+
+    _zfs_filesytems_properties:
+      canmount: true
+      snapdir: hidden
+
+      # make ZFS behave like a Linux FS
+      casesensitivity: sensitive
+      normalization: formD
+      utf8only: on
+      setuid: true
+      atime: false
+
+      # enable use of ACLs
+      acltype: posix
+      xattr: sa
+
+      # compression and deduplication
+      compression: lz4
+      dedup: false
+
+    zfs_filesystems_properties_defaults: "{{
+        _zfs_filesytems_properties | combine(
+        _zfs_performance_tuning_async_only
+      )}}"
+
+    _zfs_volumes_properties:
+      volblocksize: 8K
+      volsize: 1G
+      compression: lz4
+      dedup: false
+
+    # https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html
+    zfs_volumes_properties_defaults: "{{
+        _zfs_volumes_properties | combine(
+        _zfs_performance_tuning_async_only
+      )}}"
+
+
+    #
+    # ZPools
+    #
+
+    zfs_pools:
+      - name: rpool
+        vdev: >-
+          mirror
+            /dev/loop0
+            /dev/loop1
+        scrub: true
+        filesystem_properties:
+          canmount: off
+          mountpoint: /zfs
+
+
+    #
+    # Datasets
+    #
+
+    zfs_filesystems:
+      - name: rpool/ROOT
+        properties:
+          canmount: off
+          mountpoint: none
+      - name: rpool/ROOT/default
+        properties:
+          canmount: noauto
+          mountpoint: /zfs
+
+      - name: rpool/home
+      - name: rpool/home/root
+        properties:
+          mountpoint: /root
+      - name: rpool/var/lib/docker
+      - name: rpool/var/log
+      - name: rpool/var/spool
+      - name: rpool/var/cache
+
+
+    #
+    # Automatic Snapthots Using ZREPL
+    #
+
+    zfs_zrepl_enabled: true
+    zfs_zrepl_config:
+      jobs:
+        - name: storage
+          type: snap
+          filesystems: {
+            "rpool<": true,
+            "rpool/var<": false,
+          }
+          snapshotting:
+            type: periodic
+            interval: 12h
+            prefix: auto_
+          pruning:
+            keep:
+              # prune automatic snapshots
+              - type: grid
+                # in first 24 hours keep all snapshots
+                # in first 7 days 1 snapshot each day
+                # in first month keep 1 snapshot each week
+                # discard the rest
+                # details see: https://zrepl.github.io/configuration/prune.html#policy-grid
+                grid: 1x24h(keep=all) | 7x1d(keep=1) | 3x7d(keep=1)
+                regex: "^auto_.*"
+
+              # keep manual snapshots
+              - type: regex
+                regex: "^manual_.*"
+
+  roles:
+    - role: aisbergg.zfs

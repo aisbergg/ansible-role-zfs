@@ -1,0 +1,42 @@
+---
+- name: Prepare
+  hosts: all
+  become: true
+  tasks:
+    - when: ansible_os_family == 'Debian'
+      block:
+        - name: Use backrefs with alternative group syntax to avoid conflicts with variable values
+          ansible.builtin.lineinfile:
+            path: /etc/apt/sources.list
+            regexp: "{{ item }}"
+            line: \g<1> main contrib
+            backrefs: true
+          loop:
+            - "^(deb .*backports).*"
+            - "^(deb-src .*backports).*"
+
+        - name: update apt cache
+          ansible.builtin.apt:
+            update_cache: true
+            cache_valid_time: 3600
+
+    - when: ansible_os_family == 'RedHat'
+      block:
+        - name: install epel
+          ansible.builtin.dnf:
+            name: epel-release
+            state: present
+
+    - name: create files to act as loop file
+      community.general.filesize:
+        path: "/zfs{{ item }}.img"
+        size: 512M
+      loop:
+        - 0
+        - 1
+
+    - name: create loop devices
+      command: "losetup -P /dev/loop{{ item }} /zfs{{ item }}.img"
+      loop:
+        - 0
+        - 1
