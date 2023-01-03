@@ -2,6 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
+- [3.3.1 (2023-01-03)](#331-2023-01-03)
 - [3.3.0 (2022-12-18)](#330-2022-12-18)
 - [3.2.0 (2022-03-31)](#320-2022-03-31)
 - [3.1.0 (2022-01-28)](#310-2022-01-28)
@@ -10,6 +11,19 @@ All notable changes to this project will be documented in this file.
 - [1.0.0 (2020-08-25)](#100-2020-08-25)
 
 ---
+
+<a name="3.3.1"></a>
+## [3.3.1](https://github.com/aisbergg/ansible-role-zfs/compare/v3.3.0...v3.3.1) (2023-01-03)
+
+### Bug Fixes
+
+- fix syntax of requirements file
+
+### Chores
+
+- explicitly set Ansible as verifier
+- use fully-qualified collection name
+
 
 <a name="3.3.0"></a>
 ## [3.3.0](https://github.com/aisbergg/ansible-role-zfs/compare/v3.2.0...v3.3.0) (2022-12-18)
