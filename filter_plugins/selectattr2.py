@@ -23,8 +23,13 @@
 from collections.abc import Iterable
 
 from ansible import errors
-from jinja2.utils import pass_environment
 from jinja2.runtime import Undefined
+
+try:
+	from jinja2.filters import pass_environment
+except ImportError:
+	from jinja2.filters import environmentfilter
+	pass_environment = environmentfilter
 
 
 class FilterModule(object):
