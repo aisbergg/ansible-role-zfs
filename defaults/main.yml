@@ -28,16 +28,16 @@ zfs_service_import_cache_enabled: true
 # import ZFS pools by device scanning
 zfs_service_import_scan_enabled: false
 # ZFS mount mechanism
-zfs_service_mount_enabled: "{{ zfs_use_zfs_mount_generator | bool | ternary(false, true) }}"
+zfs_service_mount_enabled: "{{ not (zfs_use_zfs_mount_generator | bool) }}"
 # ZFS file system shares
 zfs_service_share_enabled: false
 # wait for ZFS Volume (zvol) links in /dev
 zfs_service_volume_wait_enabled: true
 # ZFS Event Daemon (zed)
-zfs_service_zed_enabled: true
+zfs_service_zed_enabled: false
 
 # use systemd mount generator, to mount ZVolumes via systemd
-zfs_use_zfs_mount_generator: true
+zfs_use_zfs_mount_generator: false
 
 
 
@@ -120,7 +120,7 @@ zfs_filesystems_properties_defaults:
 zfs_zrepl_config: {}
 
 # install and enable zrepl (https://github.com/zrepl/zrepl)
-zfs_zrepl_enabled: true
+zfs_zrepl_enabled: false
 
 # RPM repository URL of zrepl
 zfs_zrepl_redhat_repo_url: "https://zrepl.cschwarz.com/rpm/repo"

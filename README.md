@@ -23,8 +23,8 @@ This Ansible role installs the ZFS filesystem module, creates or imports zpools 
 | `zfs_service_mount_enabled` | `false` if zfs_use_zfs_mount_generator else `true` }}"` | Enable service to mount ZFS filesystems using the ZFS built-in mounting mechanism. |
 | `zfs_service_share_enabled` | `false` | Enable ZFS file system shares service. |
 | `zfs_service_volume_wait_enabled` | `true` | Enable service to wait for ZFS Volume links in `/dev`. |
-| `zfs_service_zed_enabled` | `true` | Enable ZFS Event Daemon (ZED) service. |
-| `zfs_use_zfs_mount_generator` | `true` | Enable Systemd Mount Generator, to automatically mount volumes on boot with Systemd. |
+| `zfs_service_zed_enabled` | `false` | Enable ZFS Event Daemon (ZED) service. |
+| `zfs_use_zfs_mount_generator` | `false` | Enable Systemd Mount Generator, to automatically mount volumes on boot with Systemd. |
 | `zfs_kernel_module_parameters` | `{}` | Dictionary (key-value pairs) of ZFS kernel module parameters. See [official documentation](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Module%20Parameters.html?highlight=zfs_arc_max) for available parameters. |
 | `zfs_scrub_schedule` | `monthly` | Time schedule for zpool scrubs. Valid options can be looked up [here](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events). |
 | `zfs_trim_schedule` | `weekly` | Time schedule for trim operations (for SSDs or virtual drives). Valid options can be looked up [here](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events). |
@@ -50,7 +50,7 @@ This Ansible role installs the ZFS filesystem module, creates or imports zpools 
 | `zfs_filesystem[].state` | `present` | Whether to create (present), or remove (absent) the filesystem. |
 | `zfs_filesystems_properties_defaults` | `acltype: posix`<br>`atime: false`<br>`canmount: true`<br>`casesensitivity: sensitive`<br>`compression: lz4`<br>`dedup: false`<br>`normalization: formD`<br>`setuid: true`<br>`snapdir: hidden`<br>`sync: standard`<br>`utf8only: true`<br>`xattr: sa`<br> | Default properties for ZFS filesystems. The properties can be overwritten on a per FS basis. |
 | `zfs_zrepl_config` | `{}` | Configuration for ZREPL. See the [official documentation](https://zrepl.github.io/configuration.html) for a list of available parameters. Examples can be found [here](https://github.com/zrepl/zrepl/tree/master/config/samples). |
-| `zfs_zrepl_enabled` | `true` | Install and enable [ZREPL](https://github.com/zrepl/zrepl) for replication and snapshots. |
+| `zfs_zrepl_enabled` | `false` | Install and enable [ZREPL](https://github.com/zrepl/zrepl) for replication and snapshots. |
 | `zfs_zrepl_redhat_repo_url` | `https://zrepl.cschwarz.com/`<br>`rpm/repo` | Repository URL used for ZREPL installation. Applies only to RedHat systems.  |
 | `zfs_zrepl_debian_repo_url` | `https://zrepl.cschwarz.com/`<br>`apt` | Repository URL used for ZREPL installation. Applies only to Debian systems.  |
 
