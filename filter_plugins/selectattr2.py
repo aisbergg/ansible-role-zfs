@@ -1,6 +1,6 @@
 # MIT License
 #
-# Copyright (c) 2022 Andre Lehmann
+# Copyright (c) 2023 Andre Lehmann
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@ from jinja2.runtime import Undefined
 try:
 	from jinja2.filters import pass_environment
 except ImportError:
+    # compatibility for jinja2 < 3.0
 	from jinja2.filters import environmentfilter
 	pass_environment = environmentfilter
 

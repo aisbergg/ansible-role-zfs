@@ -1,10 +1,26 @@
 # Ansible Role: `aisbergg.zfs`
 
-This Ansible role installs the ZFS filesystem module, creates or imports zpools and manages ZFS datasets on Debian and CentOS systems.
+This Ansible role installs the ZFS filesystem module, creates or imports zpools and manages ZFS datasets on Debian and RedHat systems.
+
+Destructive operations such as ZFS pool deletions are out of scope and not supported by the role. Therefore, you don't have to worry to much about losing data when using this role.
+
+**Table of Contents:**
+
+- [Requirements](#requirements)
+- [Role Variables](#role-variables)
+- [Dependencies](#dependencies)
+- [Example Playbooks](#example-playbooks)
+  - [Basic Example](#basic-example)
+  - [Advanced Example](#advanced-example)
+- [License](#license)
+- [Author Information](#author-information)
+
+---
 
 ## Requirements
 
-- System needs to be managed with Systemd
+- For Debian systems, the `backports` `contrib` repository needs to be enabled first. It is not included in the role. See [Debian Backports](https://backports.debian.org/Instructions/) for instructions.
+- The target system needs to be managed with Systemd.
 
 ## Role Variables
 
@@ -59,8 +75,51 @@ This Ansible role installs the ZFS filesystem module, creates or imports zpools 
 
 Depends on `community.general` collection.
 
-## Example Playbook
+## Example Playbooks
 
+### Basic Example
+
+A simple example to create a ZFS pool with a mirror vdev and two disks. You can test this one out using Vagrant+VirtualBox and the `Vagrantfile` provided in the `examples/` directory. Simply run `vagrant up` in the `examples/` directory and a virtual machine will be spun up with ZFS installed and a pool created.
+
+> Note: Depending on the mechanism used to install ZFS (DKMS or kmod), it might take some time to compile the kernel module and for the role to finish. This is especially true for the first run.
+
+```yaml
+- hosts: all
+  tasks:
+    # ensure you have enabled backports repository on Debian systems first
+
+    - ansible.builtin.include_role:
+        name: aisbergg.zfs
+      vars:
+        zfs_pools:
+          - name: pool
+            vdev: >-
+              mirror
+                sdb
+                sdc
+            scrub: true
+            properties:
+              ashift: 12
+            filesystem_properties:
+              mountpoint: /mnt/raid1
+              compression: lz4
+              # properties of zfs_filesystems_properties_defaults also apply here
+        zfs_filesystems:
+          - name: pool1/vol1
+          - name: pool1/vol2
+
+        # schedule for ZFS scrubs
+        zfs_scrub_schedule: monthly
+        # schedule for TRIM
+        zfs_trim_schedule: weekly
+```
+
+### Advanced Example
+
+This example is a more advanced setup with multiple pools, volumes and filesystems. It also includes ZREPL configuration for automatic snapshots. It reflects a system setup of mine where I installed the whole system on ZFS. It consists of two pools, `rpool` and `bpool`. `rpool` is the root pool with the system installed on it and `bpool` is the boot pool with the boot partition.
+
+> Note: Depending on the mechanism used to install ZFS (DKMS or kmod), it might take some time to compile the kernel module and for the role to finish. This is especially true for the first run.
+> 
 ```yaml
 - hosts: all
   vars:
@@ -72,7 +131,6 @@ Depends on `community.general` collection.
     zfs_use_zfs_mount_generator: true
     # use zfs_mount_generator but don't invoke ZED (Docker triggers it quite often)
     zfs_service_zed_enabled: false
-
 
     #
     # Configuration
@@ -145,7 +203,6 @@ Depends on `community.general` collection.
         _zfs_performance_tuning_async_only
       )}}"
 
-
     #
     # ZPools
     #
@@ -188,13 +245,11 @@ Depends on `community.general` collection.
         canmount: off
         mountpoint: /boot
 
-
     #
     # Datasets
     #
 
-    zfs_filesystems: "{{ _zfs_filesystems_system }}"
-    _zfs_filesystems_system:
+    zfs_filesystems:
       # root
       - name: rpool/ROOT
         properties:
@@ -218,7 +273,6 @@ Depends on `community.general` collection.
       - name: bpool/default
         properties:
           mountpoint: /boot
-
 
     #
     # Automatic Snapthots Using ZREPL

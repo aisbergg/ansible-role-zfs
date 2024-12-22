@@ -28,9 +28,9 @@
         state: directory
         owner: root
         group: root
-        mode: 0755
+        mode: "0755"
 
-    - name: create generator cache content
+    - name: create generator cache content  # noqa: risky-shell-pipe
       ansible.builtin.shell: |
         # see history_event-zfs-list-cacher.sh
         PROPS="name,mountpoint,canmount,atime,relatime,devices,exec\
@@ -57,7 +57,7 @@
         dest: "/etc/zfs/zfs-list.cache/{{ cache_entry.zfs_pool.name }}"
         owner: root
         group: root
-        mode: 0644
+        mode: "0644"
       loop: "{{ zfs_list_cache.results }}"
       loop_control:
         loop_var: cache_entry
@@ -72,7 +72,7 @@
         state: directory
         owner: root
         group: root
-        mode: 0755
+        mode: "0755"
 
     - name: create dependency for journald
       ansible.builtin.template:
@@ -80,7 +80,7 @@
         dest: /etc/systemd/system/systemd-journald.service.d/after-zfs-mount.service
         owner: root
         group: root
-        mode: 0644
+        mode: "0644"
       register: journald_service
 
 
@@ -134,7 +134,7 @@
         dest: /etc/systemd/system/zpool-scrub@.service
         owner: root
         group: root
-        mode: 0644
+        mode: "0644"
       register: scrub_service
 
     - name: create scrub timer
@@ -143,7 +143,7 @@
         dest: /etc/systemd/system/zpool-scrub@.timer
         owner: root
         group: root
-        mode: 0644
+        mode: "0644"
       register: scrub_timer
 
     - name: reload systemd
@@ -193,7 +193,7 @@
         dest: /etc/systemd/system/zpool-trim@.service
         owner: root
         group: root
-        mode: 0644
+        mode: "0644"
       register: trim_service
 
     - name: create trim timer
@@ -202,7 +202,7 @@
         dest: /etc/systemd/system/zpool-trim@.timer
         owner: root
         group: root
-        mode: 0644
+        mode: "0644"
       register: trim_timer
 
     - name: reload systemd

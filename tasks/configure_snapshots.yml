@@ -5,7 +5,7 @@
     dest: /etc/zrepl/zrepl.yml
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
     validate: zrepl configcheck --config %s
   notify: restart zrepl
   when: zfs_zrepl_enabled | bool

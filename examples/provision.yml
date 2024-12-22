@@ -1,0 +1,79 @@
+---
+- name: Setup host
+  hosts: all
+  become: true
+  become_method: sudo
+
+  tasks:
+    # the aisbergg.zfs role requires the backports repository but leaves it to the user to add it
+    - name: add backports-contrib repository
+      ansible.builtin.copy:
+        content: |
+          deb https://deb.debian.org/debian {{ ansible_distribution_release }} main contrib
+          deb https://security.debian.org/debian-security {{ ansible_distribution_release }}-security main
+          deb https://deb.debian.org/debian {{ ansible_distribution_release }}-updates main
+          deb https://deb.debian.org/debian {{ ansible_distribution_release }}-backports main contrib
+        dest: /etc/apt/sources.list
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: upgrade packages and potentially install a newer kernel
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: full
+        cache_valid_time: 3600
+      register: apt_upgrade
+
+    - when: apt_upgrade.changed
+      block:  #
+        - name: reboot if a new kernel was installed
+          ansible.builtin.reboot:
+            reboot_timeout: 600
+            msg: "Rebooting because we might have a new kernel"
+
+        - name: gather facts again after reboot
+          ansible.builtin.setup:
+
+    - name: gather package facts
+      ansible.builtin.package_facts:
+
+    - name: remove unused kernels
+      ansible.builtin.apt:
+        name: "{{
+              ansible_facts.packages.keys()
+              | select('match', '^linux-(image|headers)-\\d+\\.\\d+\\.\\d+.*')
+              | reject('match', '^linux-(image|headers)-'~kernel_version~'.*')
+              | list
+          }}"
+        state: absent
+      vars:
+        kernel_version: "{{ ansible_kernel | regex_replace('^(\\d+\\.\\d+\\.\\d+-d+).*', '\\1') }}"
+      ignore_errors: true
+
+    - name: manage ZFS filesystems
+      ansible.builtin.include_role:
+        name: aisbergg.zfs
+      vars:
+        zfs_pools:
+          - name: pool
+            vdev: >-
+              mirror
+                sdb
+                sdc
+            scrub: true
+            properties:
+              ashift: 12
+            filesystem_properties:
+              mountpoint: /mnt/raid1
+              compression: lz4
+              # properties of zfs_filesystems_properties_defaults also apply here
+
+        zfs_filesystems:
+          - name: pool/vol1
+          - name: pool/vol2
+
+        # schedule for ZFS scrubs
+        zfs_scrub_schedule: monthly
+        # schedule for TRIM
+        zfs_trim_schedule: weekly

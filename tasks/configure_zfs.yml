@@ -5,7 +5,7 @@
     dest: /etc/modprobe.d/zfs.conf
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   notify:
     - update initramfs (Debian)
     - mkinitcpio (Arch Linux)
@@ -16,7 +16,7 @@
     dest: /etc/default/zfs
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
 
 - block:
     - name: get serial of devices
@@ -31,5 +31,5 @@
       ansible.builtin.template:
         src: etc/udev/rules.d/90-zfs-io-scheduler.rules.j2
         dest: /etc/udev/rules.d/90-zfs-io-scheduler.rules
-        mode: 0644
+        mode: "0644"
       notify: reload udev rules

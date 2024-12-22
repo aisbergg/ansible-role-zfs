@@ -1,4 +1,4 @@
 ---
 roles: []
 collections:
-  - name: community.general
+  - community.general

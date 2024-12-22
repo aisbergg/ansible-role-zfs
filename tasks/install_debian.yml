@@ -45,7 +45,7 @@
     dest: /etc/modules-load.d/zfs.conf
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
 
 
 # ------------------------------------------------------------------------------

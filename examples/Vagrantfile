@@ -1,0 +1,25 @@
+# -*- mode: ruby -*-
+Vagrant.configure(2) do |config|
+  # see http://www.vagrantbox.es/
+  config.vm.box = "debian/bookworm64"
+#   config.vm.network "private_network", ip: "172.10.10.10"
+  config.vm.synced_folder '.', '/vagrant', disabled: true
+  config.vm.provider "virtualbox" do |v|
+    v.gui = false
+    v.customize ["modifyvm", :id, "--memory", "1024"]
+    v.customize ["modifyvm", :id, "--usb", "off"]
+    v.customize ["modifyvm", :id, "--usbehci", "off"]
+  end
+
+  config.vm.disk :disk, name: "disk1", size: "100MB"
+  config.vm.disk :disk, name: "disk2", size: "100MB"
+
+  # provisioning with shell
+  config.vm.provision "shell", inline: "apt-get update && apt-get install -y --no-install-recommends python3"
+
+  # provisioning with ansible
+  config.vm.provision "ansible" do |ansible|
+    ansible.verbose = "v"
+    ansible.playbook = "provision.yml"
+  end
+end

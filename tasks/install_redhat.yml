@@ -11,7 +11,7 @@
         dest: /etc/yum.repos.d/zfs.repo
         owner: root
         group: root
-        mode: 0644
+        mode: "0644"
 
     - name: copy ZFS repo GPG key (RedHat)
       ansible.builtin.copy:
@@ -19,7 +19,7 @@
         dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-zfsonlinux
         owner: root
         group: root
-        mode: 0644
+        mode: "0644"
 
     - name: import ZFS repo GPG key (RedHat)
       ansible.builtin.rpm_key:
@@ -48,7 +48,7 @@
     dest: /etc/modules-load.d/zfs.conf
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
 
 
 # ------------------------------------------------------------------------------
@@ -65,7 +65,7 @@
             dest: /etc/yum.repos.d/zrepl.repo
             owner: root
             group: root
-            mode: 0644
+            mode: "0644"
 
         - name: copy zrepl repo GPG key (RedHat)
           ansible.builtin.copy:
@@ -73,7 +73,7 @@
             dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-zrepl
             owner: root
             group: root
-            mode: 0644
+            mode: "0644"
 
         - name: import zrepl repo GPG key (RedHat)
           ansible.builtin.rpm_key:
