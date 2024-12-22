@@ -12,13 +12,16 @@
 
 - name: install Linux kernel headers (Debian)
   ansible.builtin.apt:
-    name: "{{
-        ansible_facts.packages.keys() |
-        select('match', '^linux-image-.+') |
-        map('replace', 'image', 'headers') |
-        list
-      }}"
+    # there might be installed kernels for which no headers are available, therefore we simply skip those
+    name: "{{ item }}"
     state: present
+  loop: "{{
+      ansible_facts.packages.keys()
+      | select('match', '^linux-image-.+')
+      | map('replace', 'image', 'headers')
+      | list
+    }}"
+  ignore_errors: true
 
 - name: install ZFS (Debian)
   ansible.builtin.apt:
