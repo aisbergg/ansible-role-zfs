@@ -15,17 +15,17 @@
 
     - name: copy ZFS repo GPG key (RedHat)
       ansible.builtin.copy:
-        src: centos/RPM-GPG-KEY-zfsonlinux
-        dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-zfsonlinux
+        src: "redhat/{{ zfs_redhat_gpg_key_file_name }}"
+        dest: "/etc/pki/rpm-gpg/{{ zfs_redhat_gpg_key_file_name }}"
         owner: root
         group: root
         mode: "0644"
 
     - name: import ZFS repo GPG key (RedHat)
       ansible.builtin.rpm_key:
-        key: /etc/pki/rpm-gpg/RPM-GPG-KEY-zfsonlinux
+        key: "/etc/pki/rpm-gpg/{{ zfs_redhat_gpg_key_file_name }}"
         state: present
-        fingerprint: C93A FFFD 9F3F 7B03 C310 CEB6 A9D5 A1C0 F14A B620
+        fingerprint: "{{ zfs_redhat_repo_fingerprint }}"
 
 - name: install Linux kernel headers (RedHat)
   ansible.builtin.dnf:
@@ -69,7 +69,7 @@
 
         - name: copy zrepl repo GPG key (RedHat)
           ansible.builtin.copy:
-            src: centos/RPM-GPG-KEY-zrepl
+            src: redhat/RPM-GPG-KEY-zrepl
             dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-zrepl
             owner: root
             group: root
