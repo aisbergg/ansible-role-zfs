@@ -8,6 +8,12 @@
     quiet: true
     fail_msg: ZFS filesystem parameters are invalid
 
+# Filesystem may not exist, so clear fact from any previous call, then
+# try to get facts for the thing.    
+- name: clear filesystem properties
+  ansible.builtin.set_fact:
+    ansible_zfs_datasets: []
+
 - name: gather properties of '{{ zfs_filesystem.name | mandatory }}'
   community.general.zfs_facts:
     name: "{{ zfs_filesystem.name }}"
