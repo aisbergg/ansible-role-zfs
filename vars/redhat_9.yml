@@ -1,0 +1,5 @@
+---
+__zfs_zedletdir: /usr/libexec/zfs/zed.d
+
+zfs_redhat_gpg_key_file_name: RPM-GPG-KEY-openzfs
+zfs_redhat_repo_fingerprint: 7DC7 299D CF7C 7FD9 CD87 701B A599 FD5E 9DB8 4141
